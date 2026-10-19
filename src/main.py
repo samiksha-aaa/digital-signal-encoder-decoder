@@ -6,6 +6,7 @@ from .data_generator import (
 )
 from .line_coding import LINE_ENCODERS, encode
 from .plotting import plot_line_code
+from .scrambling import encode_ami, encode_b8zs, encode_hdb3
 
 
 def main():
@@ -35,8 +36,8 @@ def main():
         print("\n--- Line Coding ---")
         schemes = list(LINE_ENCODERS.keys())
 
-        for index, scheme in enumerate(schemes, start=1):
-            print(f"{index}. {scheme}")
+        for index, item in enumerate(schemes, start=1):
+            print(f"{index}. {item}")
 
         scheme_choice = int(input("Choose a line-coding scheme: "))
 
@@ -45,7 +46,45 @@ def main():
             return
 
         scheme = schemes[scheme_choice - 1]
-        signal = encode(bits, scheme)
+
+        if scheme != "AMI":
+            signal = encode(bits, scheme)
+
+        else:
+            scramble_choice = input(
+                "Apply scrambling? (y/n): "
+            ).strip().lower()
+
+            if scramble_choice == "n":
+                signal = encode_ami(bits)
+
+            elif scramble_choice == "y":
+                scrambling_options = {
+                    "1": ("B8ZS", encode_b8zs),
+                    "2": ("HDB3", encode_hdb3),
+                }
+
+                print("1. B8ZS")
+                print("2. HDB3")
+
+                scramble_type = input(
+                    "Choose scrambling type: "
+                ).strip()
+
+                if scramble_type not in scrambling_options:
+                    print("Invalid scrambling option.")
+                    return
+
+                scramble_name, scramble_function = (
+                    scrambling_options[scramble_type]
+                )
+
+                signal = scramble_function(bits)
+                scheme = f"AMI + {scramble_name}"
+
+            else:
+                print("Please enter y or n.")
+                return
 
         print("\nSelected scheme:", scheme)
         print("Encoded signal levels:", signal)

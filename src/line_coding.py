@@ -1,4 +1,4 @@
-
+from .scrambling import encode_ami
 def _validate_bits(bits: str) -> None:
     """Ensure the input contains only binary digits."""
     if not bits:
@@ -89,6 +89,7 @@ LINE_ENCODERS = {
     "NRZ-I": encode_nrz_i,
     "Manchester": encode_manchester,
     "Differential Manchester": encode_differential_manchester,
+      "AMI": encode_ami,
 }
 
 
