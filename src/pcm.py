@@ -29,3 +29,25 @@ def quantize_samples(
         quantized.append(round(representative, 6))
 
     return quantized
+
+
+def encode_pcm(
+    samples: list[float],
+    bits_per_sample: int = 8,
+) -> list[str]:
+    """Encode each sample as a fixed-width PCM binary codeword."""
+    # Validate samples and quantization settings.
+    quantize_samples(samples, bits_per_sample)
+
+    levels = 2**bits_per_sample
+    step_size = 2.0 / levels
+    codewords = []
+
+    for sample in samples:
+        index = int((sample + 1.0) / step_size)
+        index = min(index, levels - 1)
+
+        codeword = format(index, f"0{bits_per_sample}b")
+        codewords.append(codeword)
+
+    return codewords

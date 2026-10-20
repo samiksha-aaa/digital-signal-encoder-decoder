@@ -1,8 +1,7 @@
 
 import unittest
 
-from src.pcm import quantize_samples
-
+from src.pcm import quantize_samples, encode_pcm
 
 class TestPCM(unittest.TestCase):
 
@@ -43,6 +42,27 @@ class TestPCM(unittest.TestCase):
             abs(high_resolution[0] - sample[0]),
             abs(low_resolution[0] - sample[0]),
         )
+
+    def test_encode_pcm_returns_binary_codewords(self):
+        result = encode_pcm([-1.0, 0.0, 1.0], bits_per_sample=3)
+
+        self.assertEqual(len(result), 3)
+        for codeword in result:
+            self.assertEqual(len(codeword), 3)
+            self.assertTrue(set(codeword).issubset({"0", "1"}))
+
+    def test_encode_pcm_saturation(self):
+        result = encode_pcm([-1.0, 1.0], bits_per_sample=3)
+
+        self.assertEqual(result, ["000", "111"])
+
+    def test_encode_pcm_rejects_empty_input(self):
+        with self.assertRaises(ValueError):
+            encode_pcm([])
+
+    def test_encode_pcm_rejects_invalid_bit_depth(self):
+        with self.assertRaises(ValueError):
+            encode_pcm([0.5], bits_per_sample=0)
 
 
 if __name__ == "__main__":
