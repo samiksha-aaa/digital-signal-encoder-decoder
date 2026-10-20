@@ -1,7 +1,7 @@
 
 import unittest
 
-from src.pcm import quantize_samples, encode_pcm
+from src.pcm import quantize_samples, encode_pcm , decode_pcm
 
 class TestPCM(unittest.TestCase):
 
@@ -63,6 +63,36 @@ class TestPCM(unittest.TestCase):
     def test_encode_pcm_rejects_invalid_bit_depth(self):
         with self.assertRaises(ValueError):
             encode_pcm([0.5], bits_per_sample=0)
+
+    def test_decode_pcm_returns_reconstructed_samples(self):
+        codewords = ["000", "100", "111"]
+        result = decode_pcm(codewords, bits_per_sample=3)
+
+        self.assertEqual(result, [-0.875, 0.125, 0.875])
+
+    def test_decode_pcm_round_trip(self):
+        samples = [-1.0, -0.5, 0.0, 0.5, 1.0]
+        codewords = encode_pcm(samples, bits_per_sample=8)
+        reconstructed = decode_pcm(codewords, bits_per_sample=8)
+
+        expected = quantize_samples(samples, bits_per_sample=8)
+        self.assertEqual(reconstructed, expected)
+
+    def test_decode_pcm_rejects_empty_input(self):
+        with self.assertRaises(ValueError):
+            decode_pcm([])
+
+    def test_decode_pcm_rejects_invalid_codeword(self):
+        with self.assertRaises(ValueError):
+            decode_pcm(["01X"], bits_per_sample=3)
+
+    def test_decode_pcm_rejects_wrong_codeword_length(self):
+        with self.assertRaises(ValueError):
+            decode_pcm(["01"], bits_per_sample=3)
+
+    def test_decode_pcm_rejects_invalid_bit_depth(self):
+        with self.assertRaises(ValueError):
+            decode_pcm(["000"], bits_per_sample=0)
 
 
 if __name__ == "__main__":
