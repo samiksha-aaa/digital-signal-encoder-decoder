@@ -16,6 +16,7 @@ from .decoder import (
     decode_b8zs,
     decode_hdb3,
 )
+from .pcm import quantize_samples, encode_pcm, decode_pcm
 
 
 def decode_signal_menu():
@@ -62,15 +63,49 @@ def decode_signal_menu():
         print("Decoding error:", error)
 
 
+def pcm_menu():
+    print("\n--- PCM Encoding and Decoding ---")
+    print("Enter sample amplitudes between -1.0 and 1.0.")
+    print("Example: -1.0, -0.5, 0.0, 0.5, 1.0")
+
+    try:
+        raw_samples = input("Enter sample amplitudes: ")
+        samples = [
+            float(value.strip())
+            for value in raw_samples.split(",")
+        ]
+
+        bits_per_sample = int(
+            input("Enter bits per sample (1-16): ")
+        )
+
+        quantized = quantize_samples(samples, bits_per_sample)
+        codewords = encode_pcm(samples, bits_per_sample)
+        reconstructed = decode_pcm(codewords, bits_per_sample)
+
+        print("\nOriginal samples:", samples)
+        print("Quantized samples:", quantized)
+        print("PCM binary codewords:", codewords)
+        print("Reconstructed samples:", reconstructed)
+
+    except ValueError as error:
+        print("PCM input error:", error)
+
+
 def main():
     print("\n=== Digital Signal Encoder and Decoder ===")
     print("1. Generate data, encode, and plot")
     print("2. Decode an existing signal")
+    print("3. PCM encode and decode")
 
-    main_choice = input("Choose an option (1/2): ").strip()
+    main_choice = input("Choose an option (1/2/3): ").strip()
 
     if main_choice == "2":
         decode_signal_menu()
+        return
+
+    if main_choice == "3":
+        pcm_menu()
         return
 
     if main_choice != "1":
